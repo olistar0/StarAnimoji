@@ -12,8 +12,8 @@ workflows:
       - name: StarAnimoji App
         script: |
           xcodebuild build \
-            -project "StarAnimoji.xcodeproj" \
-            -scheme "StarAnimoji" \
+            -project "SBSAnimoji.xcodeproj" \
+            -scheme "SBSAnimoji" \
             -configuration Release \
             -sdk iphoneos \
             -derivedDataPath build \
