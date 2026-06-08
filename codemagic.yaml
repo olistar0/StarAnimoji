@@ -1,0 +1,32 @@
+workflows:
+  ios-unsigned:
+    name: StarAnimoji App
+    instance_type: mac_mini_m2
+    max_build_duration: 15
+    environment:
+      xcode: latest
+    triggering:
+      events:
+        - push
+    scripts:
+      - name: StarAnimoji App
+        script: |
+          xcodebuild build \
+            -project "StarAnimoji.xcodeproj" \
+            -scheme "StarAnimoji" \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            PRODUCT_NAME="StarAnimoji" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            AD_HOC_CODE_SIGNING_ALLOWED=YES
+      - name: Package into IPA
+        script: |
+          mkdir -p Payload
+          cp -r build/Build/Products/Release-iphoneos/*.app Payload/
+          zip -r StarAnimoji.ipa Payload
+    artifacts:
+      - "*.ipa"
