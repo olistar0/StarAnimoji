@@ -19,6 +19,7 @@
 @property (nonatomic, assign) BOOL hasExportedMovie;
 @property (nonatomic, assign, getter=isExporting) BOOL exporting;
 @property (nonatomic, assign) BOOL recordingButtonEnabled;
+@property (nonatomic, assign) BOOL previewControlsEnabled;
 @end
 
 @implementation MainViewController
@@ -30,6 +31,7 @@
         self.title = @"StarAnimoji";
         self.animojiNames = [AVTAnimoji animojiNames];
         self.recordingButtonEnabled = YES;
+        self.previewControlsEnabled = NO;
     }
     return self;
 }
@@ -56,6 +58,8 @@
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:settingsButton];
     self.contentView.puppetView.sbsDelegate = self;
     self.contentView.puppetView.backgroundColor = [UIColor colorWithRed:0.0 green:1.0 blue:0.0 alpha:1.0];
+    self.contentView.expandPreviewButton.hidden = !self.previewControlsEnabled;
+    self.contentView.shrinkPreviewButton.hidden = !self.previewControlsEnabled;
     self.contentView.thumbnailsCollectionView.dataSource = self;
     self.contentView.thumbnailsCollectionView.delegate = self;
     [self.contentView.thumbnailsCollectionView registerClass:[PuppetThumbnailCollectionViewCell class] forCellWithReuseIdentifier:@"thumbnail"];
@@ -94,6 +98,12 @@
     [settings addAction:[UIAlertAction actionWithTitle:recordingTitle style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
         self.recordingButtonEnabled = !self.recordingButtonEnabled;
         self.contentView.recordButton.hidden = !self.recordingButtonEnabled;
+    }]];
+    NSString *resizeTitle = self.previewControlsEnabled ? @"Hide resize buttons" : @"Show resize buttons";
+    [settings addAction:[UIAlertAction actionWithTitle:resizeTitle style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+        self.previewControlsEnabled = !self.previewControlsEnabled;
+        self.contentView.expandPreviewButton.hidden = !self.previewControlsEnabled;
+        self.contentView.shrinkPreviewButton.hidden = !self.previewControlsEnabled;
     }]];
     [settings addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
     settings.popoverPresentationController.barButtonItem = self.navigationItem.rightBarButtonItem;
