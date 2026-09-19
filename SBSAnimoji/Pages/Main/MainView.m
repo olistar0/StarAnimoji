@@ -16,9 +16,12 @@
 @property (nonatomic, strong) UIButton *shareButton;
 @property (nonatomic, strong) UIButton *deleteButton;
 @property (nonatomic, strong) UIButton *previewButton;
+@property (nonatomic, strong) UIButton *expandPreviewButton;
+@property (nonatomic, strong) UIButton *shrinkPreviewButton;
 @property (nonatomic, strong) UIActivityIndicatorView *activityIndicatorView;
 @property (nonatomic, strong) UILabel *durationLabel;
 @property (nonatomic, strong) UIView *puppetViewSeparatorView;
+@property (nonatomic, strong) NSLayoutConstraint *puppetViewHeightConstraint;
 @end
 
 @implementation MainView
@@ -37,6 +40,18 @@
     self.puppetView = [[SBSPuppetView alloc] init];
     self.puppetView.translatesAutoresizingMaskIntoConstraints = NO;
     [self addSubview:self.puppetView];
+
+    self.expandPreviewButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.expandPreviewButton.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.expandPreviewButton setTitle:@"+" forState:UIControlStateNormal];
+    self.expandPreviewButton.titleLabel.font = [UIFont systemFontOfSize:24 weight:UIFontWeightMedium];
+    [self addSubview:self.expandPreviewButton];
+
+    self.shrinkPreviewButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.shrinkPreviewButton.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.shrinkPreviewButton setTitle:@"-" forState:UIControlStateNormal];
+    self.shrinkPreviewButton.titleLabel.font = [UIFont systemFontOfSize:24 weight:UIFontWeightMedium];
+    [self addSubview:self.shrinkPreviewButton];
     
     self.puppetViewSeparatorView = [[UIView alloc] init];
     self.puppetViewSeparatorView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -94,7 +109,18 @@
     [self.puppetView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor].active = YES;
     [self.puppetView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor].active = YES;
     [self.puppetView.topAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.topAnchor].active = YES;
-    [self.puppetView.heightAnchor constraintEqualToConstant:335].active = YES;
+    self.puppetViewHeightConstraint = [self.puppetView.heightAnchor constraintEqualToConstant:335];
+    self.puppetViewHeightConstraint.active = YES;
+
+    [self.expandPreviewButton.leadingAnchor constraintEqualToAnchor:self.puppetView.leadingAnchor constant:12].active = YES;
+    [self.expandPreviewButton.topAnchor constraintEqualToAnchor:self.puppetView.topAnchor constant:8].active = YES;
+    [self.expandPreviewButton.widthAnchor constraintEqualToConstant:44].active = YES;
+    [self.expandPreviewButton.heightAnchor constraintEqualToConstant:44].active = YES;
+
+    [self.shrinkPreviewButton.leadingAnchor constraintEqualToAnchor:self.expandPreviewButton.trailingAnchor constant:4].active = YES;
+    [self.shrinkPreviewButton.topAnchor constraintEqualToAnchor:self.expandPreviewButton.topAnchor].active = YES;
+    [self.shrinkPreviewButton.widthAnchor constraintEqualToAnchor:self.expandPreviewButton.widthAnchor].active = YES;
+    [self.shrinkPreviewButton.heightAnchor constraintEqualToAnchor:self.expandPreviewButton.heightAnchor].active = YES;
     
     [self.puppetViewSeparatorView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor].active = YES;
     [self.puppetViewSeparatorView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor].active = YES;
@@ -123,6 +149,23 @@
 
     [self.activityIndicatorView.centerXAnchor constraintEqualToAnchor:self.shareButton.centerXAnchor].active = YES;
     [self.activityIndicatorView.centerYAnchor constraintEqualToAnchor:self.shareButton.centerYAnchor].active = YES;
+}
+
+- (CGFloat)puppetViewHeight {
+    return self.puppetViewHeightConstraint.constant;
+}
+
+- (void)setPuppetViewHeight:(CGFloat)height animated:(BOOL)animated {
+    CGFloat minimumHeight = 200.0;
+    CGFloat maximumHeight = MAX(minimumHeight, self.bounds.size.height - 140.0);
+    self.puppetViewHeightConstraint.constant = MIN(MAX(height, minimumHeight), maximumHeight);
+    if (animated) {
+        [UIView animateWithDuration:0.25 animations:^{
+            [self layoutIfNeeded];
+        }];
+    } else {
+        [self layoutIfNeeded];
+    }
 }
 
 - (void)layoutSubviews {

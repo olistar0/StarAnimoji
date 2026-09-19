@@ -18,6 +18,10 @@
 @property (nonatomic, readonly) UIButton *shareButton;
 @property (nonatomic, readonly) UIButton *deleteButton;
 @property (nonatomic, readonly) UIButton *previewButton;
+@property (nonatomic, readonly) UIButton *expandPreviewButton;
+@property (nonatomic, readonly) UIButton *shrinkPreviewButton;
 @property (nonatomic, readonly) UIActivityIndicatorView *activityIndicatorView;
 @property (nonatomic, readonly) UILabel *durationLabel;
+- (void)setPuppetViewHeight:(CGFloat)height animated:(BOOL)animated;
+- (CGFloat)puppetViewHeight;
 @end

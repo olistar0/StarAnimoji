@@ -18,6 +18,7 @@
 @property (nonatomic, strong) NSArray *animojiNames;
 @property (nonatomic, assign) BOOL hasExportedMovie;
 @property (nonatomic, assign, getter=isExporting) BOOL exporting;
+@property (nonatomic, assign) BOOL recordingButtonEnabled;
 @end
 
 @implementation MainViewController
@@ -28,6 +29,7 @@
     if (self = [super init]) {
         self.title = @"StarAnimoji";
         self.animojiNames = [AVTAnimoji animojiNames];
+        self.recordingButtonEnabled = YES;
     }
     return self;
 }
@@ -46,6 +48,12 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    UIButton *settingsButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    settingsButton.frame = CGRectMake(0, 0, 36, 36);
+    [settingsButton setTitle:@"⚙" forState:UIControlStateNormal];
+    settingsButton.titleLabel.font = [UIFont systemFontOfSize:22];
+    [settingsButton addTarget:self action:@selector(showSettings) forControlEvents:UIControlEventTouchUpInside];
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:settingsButton];
     self.contentView.puppetView.sbsDelegate = self;
     self.contentView.puppetView.backgroundColor = [UIColor colorWithRed:0.0 green:1.0 blue:0.0 alpha:1.0];
     self.contentView.thumbnailsCollectionView.dataSource = self;
@@ -55,8 +63,41 @@
     [self.contentView.deleteButton addTarget:self action:@selector(removeRecording) forControlEvents:UIControlEventTouchUpInside];
     [self.contentView.previewButton addTarget:self action:@selector(startPreview) forControlEvents:UIControlEventTouchUpInside];
     [self.contentView.shareButton addTarget:self action:@selector(share) forControlEvents:UIControlEventTouchUpInside];
+    [self.contentView.expandPreviewButton addTarget:self action:@selector(expandPreview) forControlEvents:UIControlEventTouchUpInside];
+    [self.contentView.shrinkPreviewButton addTarget:self action:@selector(shrinkPreview) forControlEvents:UIControlEventTouchUpInside];
     [self showAnimojiNamed:self.animojiNames[0]];
     [self.contentView.thumbnailsCollectionView selectItemAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0] animated:NO scrollPosition:UICollectionViewScrollPositionNone];
+}
+
+- (void)expandPreview {
+    [self.contentView setPuppetViewHeight:[self.contentView puppetViewHeight] + 50.0 animated:YES];
+}
+
+- (void)shrinkPreview {
+    [self.contentView setPuppetViewHeight:[self.contentView puppetViewHeight] - 50.0 animated:YES];
+}
+
+- (void)showSettings {
+    UIAlertController *settings = [UIAlertController alertControllerWithTitle:@"Settings" message:@"Preview background" preferredStyle:UIAlertControllerStyleActionSheet];
+    NSArray *colors = @[
+        @{ @"name": @"Green", @"color": [UIColor colorWithRed:0.0 green:1.0 blue:0.0 alpha:1.0] },
+        @{ @"name": @"White", @"color": [UIColor whiteColor] },
+        @{ @"name": @"Blue", @"color": [UIColor colorWithRed:0.2 green:0.55 blue:1.0 alpha:1.0] },
+        @{ @"name": @"Black", @"color": [UIColor blackColor] }
+    ];
+    for (NSDictionary *entry in colors) {
+        [settings addAction:[UIAlertAction actionWithTitle:entry[@"name"] style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+            self.contentView.puppetView.backgroundColor = entry[@"color"];
+        }]];
+    }
+    NSString *recordingTitle = self.recordingButtonEnabled ? @"Hide recording button" : @"Show recording button";
+    [settings addAction:[UIAlertAction actionWithTitle:recordingTitle style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+        self.recordingButtonEnabled = !self.recordingButtonEnabled;
+        self.contentView.recordButton.hidden = !self.recordingButtonEnabled;
+    }]];
+    [settings addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
+    settings.popoverPresentationController.barButtonItem = self.navigationItem.rightBarButtonItem;
+    [self presentViewController:settings animated:YES completion:nil];
 }
 
 // Pragma mark: - Private
@@ -99,7 +140,7 @@
     [self removeExistingMovieFile];
     [self.contentView.puppetView stopRecording];
     [self.contentView.puppetView stopPreviewing];
-    self.contentView.recordButton.hidden = NO;
+    self.contentView.recordButton.hidden = !self.recordingButtonEnabled;
     self.contentView.deleteButton.hidden = YES;
     self.contentView.previewButton.hidden = YES;
     self.contentView.shareButton.hidden = YES;
